@@ -62,19 +62,12 @@ for i in range(len(subjs)):
             same_song_minus_diff_song = avg_same_songs - avg_diff_songs
             # Compute difference score for permuted matrices
             np.random.seed(0)
-            for i in range(100):
-                A_perm = np.random.permutation(A.T)
-                B_perm = np.random.permutation(B.T)
-                corr_eye = np.identity(16)
-                corrAB_perm = np.corrcoef(A_perm,B_perm)[16:,:16]
+            for i in range(100,1):
+                corrAB_perm = corrAB[np.random.permutation(16),:]
                 same_songs_perm = corrAB_perm[corr_eye == 1]
                 diff_songs_perm = corrAB_perm[corr_eye == 0]
-                avg_same_songs_perm = np.mean(same_songs_perm)
-                avg_diff_songs_perm = np.mean(diff_songs_perm)
-                same_song_minus_diff_song_perm = avg_same_songs_perm - avg_diff_songs_perm                
-            
-                diff_perm_holder.append(same_song_minus_diff_song_perm)
-        
+                diff_perm_holder[i] = np.mean(same_songs_perm) - np.mean(diff_songs_perm)                
+             
             z = (same_song_minus_diff_song - np.mean(diff_perm_holder))/np.std(diff_perm_holder)
             return z
 
@@ -85,7 +78,6 @@ for i in range(len(subjs)):
         sl.broadcast(None)
         print('Running Searchlight...')
         global_outputs = sl.run_searchlight(corr2_coeff)
-        print(global_outputs.shape)
         global_outputs_all[:,:,:,i] = global_outputs
         
 # Plot and save searchlight results

@@ -41,18 +41,23 @@ avgsubjData2Horz = np.vstack(avgsubjData2)
 
 print("Performing correlation...")
 # perform correlation on full data and average data
-corrD    = corr2_coeff(subjData1Horz,subjData2Horz)
+corrD    = corr2_coeff(subjData1Horz.T,subjData2Horz.T)
 avgCorrD = corr2_coeff(avgsubjData1Horz,avgsubjData2Horz)
 
 print("Saving correlation data to subject " + subj + " directory")
 np.save(datadir + str(subj) + '/data/' + 'corrD' + roi, corrD)
 np.save(datadir + str(subj) + '/data/' + 'avgCorrD' + roi, avgCorrD)
 
-# compute average section of avgCorrD
+# compute average section of avgCorrD and exclude diagonal to avoid incorporating same song info in average
+corr_eye = np.identity(8)
 classical_within  = avgCorrD[0:8,0:8]
+classical_within  = classical_within[corr_eye == 0]
 jazz_within       = avgCorrD[8:16,8:16]
+jazz_within       = jazz_within[corr_eye == 0]
 classJazz_between = avgCorrD[8:16,0:8]
+classJazz_between = classJazz_between[corr_eye == 0]
 jazzClass_between = avgCorrD[0:8,8:16]
+jazzClass_between = jazzClass_between[corr_eye == 0]
 
 plt.figure(1)
 plt.imshow(corrD,interpolation='none')
@@ -68,7 +73,7 @@ plt.axis('tight')
 
 plt.figure(3)
 allComparisonsAvg = np.array([np.mean(classical_within),np.mean(jazz_within),np.mean(classJazz_between),np.mean(jazzClass_between)])
-allComparisonsSem = np.array([stats.sem(np.mean(classical_within,0)),stats.sem(np.mean(jazz_within,0)),stats.sem(np.mean(classJazz_between,0)),stats.sem(np.mean(jazzClass_between,0))])
+allComparisonsSem = np.array([stats.sem(classical_within),stats.sem(jazz_within),stats.sem(classJazz_between),stats.sem(jazzClass_between)])
 N = 4
 ind = np.arange(N)
 width = 0.35

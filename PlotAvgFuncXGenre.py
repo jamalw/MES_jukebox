@@ -3,12 +3,13 @@ import numpy as np
 import pylab as pl
 import scipy as sp
 from scipy import stats
+import sys
 
 roi = sys.argv[1]
-subjs = ['MES_022817_0','MES_030217_0']
+subjs = ['MES_022817_0','MES_030217_0', 'MES_032117_1','MES_040217_0','MES_041117_0','MES_041217_0','MES_041317_0', 'MES_041417_0','MES_041517_0','MES_042017_0','MES_042317_0','MES_042717_0','MES_050317_0','MES_051317_0','MES_051917_0','MES_052017_0','MES_052017_1','MES_052317_0','MES_052517_0','MES_052617_0','MES_052817_0','MES_052817_1','MES_053117_0','MES_060117_0','MES_060117_1']
 datadir = '/jukebox/norman/jamalw/MES/subjects/'
 
-corrD3D = np.zeros((2600,2600,len(subjs)))
+corrD3D = np.zeros((2511,2511,len(subjs)))
 avgCorrD3D = np.zeros((16,16,len(subjs)))
 
 for i in range(len(subjs)):
@@ -19,10 +20,15 @@ meanCorrFull = np.mean(corrD3D,2)
 meanCorrAvg  = np.mean(avgCorrD3D,2)
 
 # compute average section of avgCorrD
+corr_eye = np.identity(8)
 classical_within  = meanCorrAvg[0:8,0:8]
+classical_within_off  = classical_within[corr_eye == 0]
 jazz_within       = meanCorrAvg[8:16,8:16]
+jazz_within_off       = jazz_within[corr_eye == 0]
 classJazz_between = meanCorrAvg[8:16,0:8]
+classJazz_between_off = classJazz_between[corr_eye == 0]
 jazzClass_between = meanCorrAvg[0:8,8:16]
+jazzClass_between_off = jazzClass_between[corr_eye == 0]
 
 labels = ["Classical","Jazz"]
 
@@ -33,16 +39,16 @@ plt.axis('tight')
 ax = plt.gca()
 plt.plot((ax.get_ylim()[0],ax.get_ylim()[1]),(ax.get_xlim()[1],ax.get_xlim()[0]),"k-")
 pl.text(2800,2800,'N='+ str(len(subjs)),fontweight='bold')
-plt.plot((-.5, 2600.5), (1300.5, 1300.5), 'k-')
-plt.plot((1300.5, 1300.5), (-.5, 2600.5), 'k-')
+plt.plot((-.5, 2511.5), (1255.5, 1255.5), 'k-')
+plt.plot((1255.5, 1255.5), (-.5, 2511.5), 'k-')
 pl.text(500,-70,labels[0])
 pl.text(500,2800,labels[0])
-pl.text(2650,500,labels[0],rotation='270')
+pl.text(2550,500,labels[0],rotation='270')
 pl.text(-300,500,labels[0],rotation='vertical')
 pl.text(1800,-70,labels[1])
 pl.text(-300,1800,labels[1],rotation='vertical')
 pl.text(1800,2800,labels[1])
-pl.text(2650,1800,labels[1],rotation='270')
+pl.text(2550,1800,labels[1],rotation='270')
 pl.text(900.5, -200,'Full Correlation Matrix',fontweight='bold')
 plt.savefig('/jukebox/norman/jamalw/MES/data/plots/FullCorrMat_N' + str(len(subjs)) + roi)
 
@@ -54,32 +60,31 @@ plt.plot((7.5, 7.5), (-.5, 15.5), 'k-')
 plt.colorbar()
 plt.axis('tight')
 plt.plot((ax.get_ylim()[0],ax.get_ylim()[1]),(ax.get_xlim()[1],ax.get_xlim()[0]),"k-")
-pl.text(2.75,-1,labels[0])
-pl.text(2.75,17,labels[0])
-pl.text(15.75,2.75,labels[0],rotation='270')
-pl.text(-2,2.75,labels[0],rotation='vertical')
-pl.text(10.75,-1,labels[1])
-pl.text(-2,10.75,labels[1],rotation='vertical')
-pl.text(15.75,10.75,labels[1],rotation='270')
-pl.text(10.75,17,labels[1])
-pl.text(18,17,'N='+ str(len(subjs)),fontweight='bold')
-plt.text(3.75,-1.75,'Average Within-Song Correlation',fontweight='bold')
+plt.text(2.75,-1,labels[0],fontsize=15)
+plt.text(2.75,17,labels[0],fontsize=15)
+plt.text(15.65,2.75,labels[0],rotation='270',fontsize=15)
+plt.text(-2,2.75,labels[0],rotation='vertical',fontsize=15)
+plt.text(10.75,-1,labels[1],fontsize=15)
+plt.text(-2,10.75,labels[1],rotation='vertical',fontsize=15)
+plt.text(15.65,10.75,labels[1],rotation='270',fontsize=15)
+plt.text(10.75,17,labels[1],fontsize=15)
+plt.text(18,17,'N='+ str(len(subjs)),fontweight='bold',fontsize=15)
+plt.text(19.5,8,'r',fontweight='bold',fontsize=15)
+plt.text(1,-1.75,'Average Within-Song Correlation',fontweight='bold',fontsize=18)
 plt.savefig('/jukebox/norman/jamalw/MES/data/plots/AvgCorrMat_N' + str(len(subjs)) + roi)
 
 plt.figure(3,facecolor="1")
-allComparisonsAvg = np.array([np.mean(classical_within),np.mean(jazz_within),np.mean(classJazz_between),np.mean(jazzClass_between)])
-allComparisonsSem = np.array([stats.sem(np.mean(classical_within,0)),stats.sem(np.mean(jazz_within,0)),stats.sem(np.mean(classJazz_between,0)),stats.sem(np.mean(jazzClass_between,0))])
+allComparisonsAvg = np.array([np.mean(classical_within_off),np.mean(jazz_within_off),np.mean(classJazz_between_off),np.mean(jazzClass_between_off)])
+allComparisonsSem = np.array([stats.sem(classical_within_off),stats.sem(jazz_within_off),stats.sem(classJazz_between_off),stats.sem(jazzClass_between_off)])
 N = 4
 ind = np.arange(N)
 width = 0.35
 plt.bar(ind, allComparisonsAvg, width, color='k',yerr = allComparisonsSem,error_kw=dict(ecolor='lightseagreen',lw=3,capsize=0,capthick=0))
-plt.ylabel('Pattern Similarity (r)')
-plt.title('Average Within and Between-Genre Pattern Similarity')
+plt.ylabel('Pattern Similarity (r)',fontsize=15)
+plt.title('Average Within and Between-Genre Similarity',fontweight='bold',fontsize=18)
 labels = ['Classical vs Classical', 'Jazz vs Jazz', 'Jazz vs Classical', 'Classical vs Jazz']
-plt.xticks(ind + width / 2,labels)
-plt.plot((0,3.5),(0,0),'k-')
-pl.text(18,17,'N=2',fontweight='bold')
-#allComparisonsStd = np.array([np.std(classical_within),np.std(jazz_within),np.std(classJazz_between),np.std(jazzClass_between)])
+plt.xticks(ind + width / 2,labels,fontsize=12)
+plt.plot((-0.175,3.5),(0,0),'k-')
 plt.savefig('/jukebox/norman/jamalw/MES/data/plots/AvgGenreSim_N' + str(len(subjs)) + roi) 
 
 # Plot average Within song and Between song comparison
@@ -91,12 +96,11 @@ N = 2
 ind = np.arange(N)
 width = 0.35
 plt.bar(ind, WithinBetwnSongAvgCorr, width, color='k',yerr=WithinBetwnSongSemCorr,error_kw=dict(ecolor='lightseagreen',lw=3,capsize=0,capthick=0))
-plt.ylabel('Pattern Similarity (r)')
-plt.title('Average Within- and Between-Song Pattern Similarity')
+plt.ylabel('Pattern Similarity (r)',fontsize=15)
+plt.title('Average Within- and Between-Song Similarity',fontweight='bold',fontsize=18)
 labels = ['Same Song','Different Song']
-plt.xticks(ind + width / 2,labels)
-plt.plot((0,1.5),(0,0),'k-')
-pl.text(18,17,'N=2',fontweight='bold')
+plt.xticks(ind + width / 2,labels,fontsize=15)
+plt.plot((-0.175,1.5),(0,0),'k-')
 plt.savefig('/jukebox/norman/jamalw/MES/data/plots/AvgSongSim_N' + str(len(subjs)) + roi)
 
 # Plot average Within song and Between song correlation for each genre
@@ -123,11 +127,11 @@ N = 4
 ind = np.arange(N)
 width = 0.35
 plt.bar(ind, AvgAllGroups, width, color='k',yerr=SemAllGroups,error_kw=dict(ecolor='lightseagreen',lw=3,capsize=0,capthick=0))
-plt.ylabel('Pattern Similarity (r)')
-plt.title('Average Within- and Between-Song Pattern Similarity Within Genre')
+plt.ylabel('Pattern Similarity (r)',fontsize=15)
+plt.title('Within- and Between-Song Similarity Within Genre',fontweight='bold',fontsize=18)
 labels = ['Classical Within','Classical Between','Jazz Within', 'Jazz Between']
-plt.xticks(ind + width / 2,labels)
-plt.plot((0,1.5),(0,0),'k-')
+plt.xticks(ind + width / 2,labels,fontsize=14)
+plt.plot((-0.175,1.5),(0,0),'k-')
 pl.text(18,17,'N=2',fontweight='bold')
 plt.savefig('/jukebox/norman/jamalw/MES/data/plots/WithinGenreOnOffDiag_N' + str(len(subjs)) + roi)
 

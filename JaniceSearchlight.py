@@ -19,6 +19,31 @@ mask_img = load_img(datadir + 'data/MNI152_T1_2mm_brain_mask.nii')
 mask_img = mask_img.get_data()
 global_outputs_all = np.zeros((91,109,91,len(subjs)))
 
+def corr2_coeff(AB,msk,myrad,bcast_var):
+    if not np.all(msk):
+        return None
+    A,B = (AB[0], AB[1])
+    A = A.reshape((-1,A.shape[-1]))
+    B = B.reshape((-1,B.shape[-1]))
+    corrAB = np.corrcoef(A.T,B.T)[16:,:16]
+    corr_eye = np.identity(16)
+    same_songs = corrAB[corr_eye == 1]
+    diff_songs = corrAB[corr_eye == 0]	    
+    avg_same_songs = np.mean(same_songs)
+    avg_diff_songs = np.mean(diff_songs)
+    same_song_minus_diff_song = avg_same_songs - avg_diff_songs
+    # Compute difference score for permuted matrices
+    np.random.seed(0)
+    diff_perm_holder = np.zeros((100,1))
+    for i in range(100):
+        corrAB_perm = corrAB[np.random.permutation(16),:]
+        same_songs_perm = corrAB_perm[corr_eye == 1]
+        diff_songs_perm = corrAB_perm[corr_eye == 0]
+        diff_perm_holder[i] = np.mean(same_songs_perm) - np.mean(diff_songs_perm)                
+             
+    z = (same_song_minus_diff_song - np.mean(diff_perm_holder))/np.std(diff_perm_holder)
+    return z
+
 for i in range(len(subjs)):
         counter = 0
         # Load functional data and mask data
@@ -45,33 +70,6 @@ for i in range(len(subjs)):
             avg_others = np.reshape(np.mean(others,2),(91,109,91,16))
             
         np.seterr(divide='ignore',invalid='ignore')
-
-	# Define function that takes difference of same song average vs. different song average
-        def corr2_coeff(AB,msk,myrad,bcast_var):
-            if not np.all(msk):
-                return None
-            A,B = (AB[0], AB[1])
-            A = A.reshape((-1,A.shape[-1]))
-            B = B.reshape((-1,B.shape[-1]))
-            corrAB = np.corrcoef(A.T,B.T)[16:,:16]
-            corr_eye = np.identity(16)
-            same_songs = corrAB[corr_eye == 1]
-            diff_songs = corrAB[corr_eye == 0]	    
-            avg_same_songs = np.mean(same_songs)
-            avg_diff_songs = np.mean(diff_songs)
-            same_song_minus_diff_song = avg_same_songs - avg_diff_songs
-            # Compute difference score for permuted matrices
-            np.random.seed(0)
-            diff_perm_holder = np.zeros((100,1))
-            for i in range(100):
-                corrAB_perm = corrAB[np.random.permutation(16),:]
-                same_songs_perm = corrAB_perm[corr_eye == 1]
-                diff_songs_perm = corrAB_perm[corr_eye == 0]
-                diff_perm_holder[i] = np.mean(same_songs_perm) - np.mean(diff_songs_perm)                
-             
-            z = (same_song_minus_diff_song - np.mean(diff_perm_holder))/np.std(diff_perm_holder)
-            return z
-
 
         # Create and run searchlight
         sl = Searchlight(sl_rad=2,max_blk_edge=5)

@@ -62,7 +62,6 @@ for i in range(len(subjs)):
             same_song_minus_diff_song = avg_same_songs - avg_diff_songs
             # Compute difference score for permuted matrices
             np.random.seed(0)
-            diff_perm_holder = []
             for i in range(100):
                 A_perm = np.random.permutation(A.T)
                 B_perm = np.random.permutation(B.T)

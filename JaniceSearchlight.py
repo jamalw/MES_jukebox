@@ -92,8 +92,8 @@ max = np.max(global_nonans[~np.isnan(global_nonans)])
 img = nib.Nifti1Image(global_nonans, np.eye(4))
 img.header['cal_min'] = min
 img.header['cal_max'] = max
-nib.save(img,'janice_results_n25.nii.gz')
-np.save('janice_mat_n25',global_nonans)
+nib.save(img,'janice_results_n25_permuted.nii.gz')
+np.save('janice_mat_n25_permuted',global_nonans)
 
 print('Searchlight is Complete!')
 
